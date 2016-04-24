@@ -1,6 +1,9 @@
 # JetPack
 You can use JetPack in Nukkit!
 
+Download
+[![Build Status](http://jenkins.haniokasai.com/buildStatus/icon?job=JetPack-Nukkit)](http://jenkins.haniokasai.com/job/JetPack-Nukkit/ "Jenkins ")
+
 based on https://github.com/maa123/PVPitem/
 
 
