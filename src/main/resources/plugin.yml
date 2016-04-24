@@ -1,6 +1,6 @@
 name: JetPack
 main: com.haniokasai.nukkit.JetPack.Main
-version: 0.0.1
+version: 1.0.0
 author: haniokasai
 api: ["1.0.0"]
 description: JetPack plugin
