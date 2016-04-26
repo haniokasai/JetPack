@@ -4,6 +4,9 @@ You can use JetPack in Nukkit!
 Download
 [![Build Status](http://jenkins.haniokasai.com/buildStatus/icon?job=JetPack-Nukkit)](http://jenkins.haniokasai.com/job/JetPack-Nukkit/ "Jenkins ")
 
+https://www.youtube.com/watch?v=bqR2QQ1oWec
+http://forums.nukkit.cn/resources/jetpack.48/
+
 based on https://github.com/maa123/PVPitem/
 
 
