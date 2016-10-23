@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import cn.nukkit.Player;
+import cn.nukkit.Server;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.EventPriority;
@@ -13,13 +14,13 @@ import cn.nukkit.event.Listener;
 import cn.nukkit.event.entity.ProjectileHitEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.server.DataPacketReceiveEvent;
-import cn.nukkit.level.Position;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.DoubleTag;
 import cn.nukkit.nbt.tag.FloatTag;
 import cn.nukkit.nbt.tag.ListTag;
 import cn.nukkit.network.protocol.DataPacket;
+import cn.nukkit.network.protocol.SetEntityLinkPacket;
 import cn.nukkit.network.protocol.UseItemPacket;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.Config;
@@ -133,6 +134,23 @@ public class Main extends PluginBase implements Listener{
 
 				snowball.setMotion(snowball.getMotion().multiply(speed));
 				snowball.spawnToAll();
+				SetEntityLinkPacket setEntityLinkPk = new SetEntityLinkPacket();
+				setEntityLinkPk.rider =  snowball.getId();
+				setEntityLinkPk.riding = player.getId();
+				setEntityLinkPk.type = SetEntityLinkPacket.TYPE_PASSENGER;
+				player.dataPacket(setEntityLinkPk);
+
+				setEntityLinkPk = new SetEntityLinkPacket();
+				setEntityLinkPk.rider =  snowball.getId();
+				setEntityLinkPk.riding = player.getId();
+				setEntityLinkPk.type = 2;
+                Server.broadcastPacket(Server.getInstance().getOnlinePlayers().values(), pk);
+
+                setEntityLinkPk = new SetEntityLinkPacket();
+                setEntityLinkPk.rider = snowball.getId();
+                setEntityLinkPk.riding = 0;
+                setEntityLinkPk.type = 2;
+                player.dataPacket(setEntityLinkPk);
 				gun.put((int) snowball.getId(),player);
 
 			}
@@ -140,7 +158,7 @@ public class Main extends PluginBase implements Listener{
 
 	  @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = false) //DON'T FORGET THE ANNOTATION @EventHandler
 	    public void onProjectileHit(ProjectileHitEvent event) throws Exception{
-	        Entity snowball = event.getEntity();
+	       /*Entity snowball = event.getEntity();
 	        Position loc = snowball.getLocation();
 	        snowball.getLevel().removeEntity(snowball);
 	        if(gun.containsKey((int)snowball.getId())){
@@ -154,7 +172,7 @@ public class Main extends PluginBase implements Listener{
 				z = (vector3.getZ() * 1);
 				player.setMotion(vector3);
 				gun.remove((int)snowball.getId());
-	        }
+	        }*/
 	       }
 
 }
