@@ -1,13 +1,26 @@
 package com.haniokasai.nukkit.JetPack;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import cn.nukkit.Player;
+import cn.nukkit.entity.Entity;
 import cn.nukkit.event.EventHandler;
+import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
+import cn.nukkit.event.entity.ProjectileHitEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
+import cn.nukkit.event.server.DataPacketReceiveEvent;
+import cn.nukkit.level.Position;
 import cn.nukkit.math.Vector3;
+import cn.nukkit.nbt.tag.CompoundTag;
+import cn.nukkit.nbt.tag.DoubleTag;
+import cn.nukkit.nbt.tag.FloatTag;
+import cn.nukkit.nbt.tag.ListTag;
+import cn.nukkit.network.protocol.DataPacket;
+import cn.nukkit.network.protocol.UseItemPacket;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.Config;
 
@@ -15,6 +28,7 @@ import cn.nukkit.utils.Config;
 
 public class Main extends PluginBase implements Listener{
 
+	static Map<Integer, Player> gun = new HashMap<Integer, Player>();
 
 
 	public void onEnable() {
@@ -83,5 +97,64 @@ public class Main extends PluginBase implements Listener{
 
 
     }
+
+
+	  @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = false) //DON'T FORGET THE ANNOTATION @EventHandler
+		public void fishingrod(DataPacketReceiveEvent event){
+			Player player = event.getPlayer();
+			String name = player.getName();
+			DataPacket pk = event.getPacket();
+			UseItemPacket useItemPacket = null;
+			String type ="Snowball";
+			Double speed = 2.0;
+			boolean p = false;
+			try{
+				useItemPacket = (UseItemPacket) pk;
+				if (pk instanceof UseItemPacket & useItemPacket.face == 0xff) {
+					p = true;
+				}
+				}catch(Exception okok){
+				}
+
+			if(p){
+				CompoundTag nbt = new CompoundTag()
+						.putList(new ListTag<DoubleTag>("Pos")
+								.add(new DoubleTag("", player.getX()+(-Math.sin(player.yaw / 180 * Math.PI) * Math.cos(player.pitch / 180 * Math.PI))))
+								.add(new DoubleTag("", player.getY()+player.getEyeHeight()-0.25))
+								.add(new DoubleTag("", player.getZ()+(Math.cos(player.yaw / 180 * Math.PI) * Math.cos(player.pitch / 180 * Math.PI)))))
+						.putList(new ListTag<DoubleTag>("Motion")
+								.add(new DoubleTag("",-Math.sin(player.yaw / 180 * Math.PI) * Math.cos(player.pitch / 180 * Math.PI)))
+								.add(new DoubleTag("",-Math.sin(player.pitch / 180 * Math.PI)))
+								.add(new DoubleTag("", Math.cos(player.yaw / 180 * Math.PI) * Math.cos(player.pitch / 180 * Math.PI))))
+						.putList(new ListTag<FloatTag>("Rotation")
+								.add(new FloatTag("", (float) player.yaw))
+								.add(new FloatTag("", (float) player.pitch)));
+				Entity snowball = Entity.createEntity(type,player.chunk,nbt,player);
+
+				snowball.setMotion(snowball.getMotion().multiply(speed));
+				snowball.spawnToAll();
+				gun.put((int) snowball.getId(),player);
+
+			}
+	  }
+
+	  @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = false) //DON'T FORGET THE ANNOTATION @EventHandler
+	    public void onProjectileHit(ProjectileHitEvent event) throws Exception{
+	        Entity snowball = event.getEntity();
+	        Position loc = snowball.getLocation();
+	        snowball.getLevel().removeEntity(snowball);
+	        if(gun.containsKey((int)snowball.getId())){
+	        	Player player =gun.get((int)snowball.getId());
+	        	Vector3 vector3 = snowball.getLocation();
+	        	double x = vector3.x;
+	        	double y = vector3.y;
+	        	double z = vector3.z;
+				x =(vector3.getX() * 1);
+				y = (vector3.getY() * 1 + 1);
+				z = (vector3.getZ() * 1);
+				player.setMotion(vector3);
+				gun.remove((int)snowball.getId());
+	        }
+	       }
 
 }
