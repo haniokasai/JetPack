@@ -7,6 +7,7 @@ import java.util.Map;
 
 import cn.nukkit.Player;
 import cn.nukkit.Server;
+import cn.nukkit.block.Block;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.EventPriority;
@@ -14,6 +15,7 @@ import cn.nukkit.event.Listener;
 import cn.nukkit.event.entity.ProjectileHitEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.server.DataPacketReceiveEvent;
+import cn.nukkit.level.Position;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.DoubleTag;
@@ -108,6 +110,7 @@ public class Main extends PluginBase implements Listener{
 			UseItemPacket useItemPacket = null;
 			String type ="Snowball";
 			Double speed = 2.0;
+			
 			boolean p = false;
 			try{
 				useItemPacket = (UseItemPacket) pk;
@@ -117,7 +120,7 @@ public class Main extends PluginBase implements Listener{
 				}catch(Exception okok){
 				}
 
-			if(p){
+			if(p&player.getInventory().getItemInHand().getId()==346){
 				CompoundTag nbt = new CompoundTag()
 						.putList(new ListTag<DoubleTag>("Pos")
 								.add(new DoubleTag("", player.getX()+(-Math.sin(player.yaw / 180 * Math.PI) * Math.cos(player.pitch / 180 * Math.PI))))
@@ -158,21 +161,23 @@ public class Main extends PluginBase implements Listener{
 
 	  @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = false) //DON'T FORGET THE ANNOTATION @EventHandler
 	    public void onProjectileHit(ProjectileHitEvent event) throws Exception{
-	       /*Entity snowball = event.getEntity();
+	       Entity snowball = event.getEntity();
 	        Position loc = snowball.getLocation();
 	        snowball.getLevel().removeEntity(snowball);
 	        if(gun.containsKey((int)snowball.getId())){
 	        	Player player =gun.get((int)snowball.getId());
 	        	Vector3 vector3 = snowball.getLocation();
-	        	double x = vector3.x;
-	        	double y = vector3.y;
-	        	double z = vector3.z;
-				x =(vector3.getX() * 1);
-				y = (vector3.getY() * 1 + 1);
-				z = (vector3.getZ() * 1);
-				player.setMotion(vector3);
+	        	Vector3 v =new Vector3(player.getFloorX(),player.getFloorY()-1,player.getFloorZ());
+	        	if(player.getLevel().getBlock(v).getId() ==0){
+	        		player.getLevel().setBlock(v, Block.get(20));
+	        		 Server.getInstance().getScheduler().scheduleDelayedTask(new Runnable() {
+				            public void run() {
+				            	player.getLevel().setBlock(v, Block.get(0));
+	        		 }
+	        	},20*15);
+	        	}
 				gun.remove((int)snowball.getId());
-	        }*/
+	        }
 	       }
 
 }
