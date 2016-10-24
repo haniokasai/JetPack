@@ -32,6 +32,7 @@ import cn.nukkit.utils.Config;
 public class Main extends PluginBase implements Listener{
 
 	static Map<Integer, Player> gun = new HashMap<Integer, Player>();
+	static Map<String , Boolean> hook = new HashMap<String , Boolean>();
 
 
 	public void onEnable() {
@@ -103,14 +104,14 @@ public class Main extends PluginBase implements Listener{
 
 
 	  @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = false) //DON'T FORGET THE ANNOTATION @EventHandler
-		public void fishingrod(DataPacketReceiveEvent event){
+		public void fishingrod(DataPacketReceiveEvent event) throws Exception {
 			Player player = event.getPlayer();
 			String name = player.getName();
 			DataPacket pk = event.getPacket();
 			UseItemPacket useItemPacket = null;
-			String type ="Snowball";
+			String type ="Arrow";
 			Double speed = 2.0;
-			
+
 			boolean p = false;
 			try{
 				useItemPacket = (UseItemPacket) pk;
@@ -120,7 +121,8 @@ public class Main extends PluginBase implements Listener{
 				}catch(Exception okok){
 				}
 
-			if(p&player.getInventory().getItemInHand().getId()==346){
+			if(p&!hook.containsKey(player.getName())){
+				if(player.getInventory().getItemInHand().getId()==346){
 				CompoundTag nbt = new CompoundTag()
 						.putList(new ListTag<DoubleTag>("Pos")
 								.add(new DoubleTag("", player.getX()+(-Math.sin(player.yaw / 180 * Math.PI) * Math.cos(player.pitch / 180 * Math.PI))))
@@ -155,7 +157,9 @@ public class Main extends PluginBase implements Listener{
                 setEntityLinkPk.type = 2;
                 player.dataPacket(setEntityLinkPk);
 				gun.put((int) snowball.getId(),player);
+				hook.put(name,true);
 
+			}
 			}
 	  }
 
@@ -166,17 +170,23 @@ public class Main extends PluginBase implements Listener{
 	        snowball.getLevel().removeEntity(snowball);
 	        if(gun.containsKey((int)snowball.getId())){
 	        	Player player =gun.get((int)snowball.getId());
-	        	Vector3 vector3 = snowball.getLocation();
+	        	final Vector3 vector3 = snowball.getLocation();
+	        	final int x=snowball.getLocation().getFloorX();
+	        	final int y =snowball.getLocation().getFloorY();
+	        	final int z =snowball.getLocation().getFloorZ();
 	        	Vector3 v =new Vector3(player.getFloorX(),player.getFloorY()-1,player.getFloorZ());
-	        	if(player.getLevel().getBlock(v).getId() ==0){
+	        	if(player.getLevel().getBlock(vector3).getId() ==0&(player.getLevel().getBlock(new Vector3(x+1,y,z)).getId() !=0||player.getLevel().getBlock(new Vector3(x-1,y,z)).getId() !=0||player.getLevel().getBlock(new Vector3(x,y,z+1)).getId() !=0||player.getLevel().getBlock(new Vector3(x,y,z-1)).getId() !=0)){
+	        		player.getLevel().setBlock(vector3, Block.get(20));
 	        		player.getLevel().setBlock(v, Block.get(20));
 	        		 Server.getInstance().getScheduler().scheduleDelayedTask(new Runnable() {
 				            public void run() {
+				            	player.getLevel().setBlock(vector3, Block.get(0));
 				            	player.getLevel().setBlock(v, Block.get(0));
 	        		 }
 	        	},20*15);
 	        	}
 				gun.remove((int)snowball.getId());
+				hook.remove(player.getName());
 	        }
 	       }
 
