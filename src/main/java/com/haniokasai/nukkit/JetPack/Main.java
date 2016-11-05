@@ -9,13 +9,19 @@ import cn.nukkit.Player;
 import cn.nukkit.Server;
 import cn.nukkit.block.Block;
 import cn.nukkit.entity.Entity;
+import cn.nukkit.entity.projectile.EntityArrow;
+import cn.nukkit.entity.projectile.EntityProjectile;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
+import cn.nukkit.event.entity.EntityShootBowEvent;
 import cn.nukkit.event.entity.ProjectileHitEvent;
+import cn.nukkit.event.entity.ProjectileLaunchEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.server.DataPacketReceiveEvent;
+import cn.nukkit.item.Item;
 import cn.nukkit.level.Position;
+import cn.nukkit.level.sound.LaunchSound;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.DoubleTag;
@@ -139,6 +145,27 @@ public class Main extends PluginBase implements Listener{
 
 				snowball.setMotion(snowball.getMotion().multiply(speed));
 				snowball.spawnToAll();
+				Item bow = player.getInventory().getItemInHand();
+	               EntityShootBowEvent entityShootBowEvent = new EntityShootBowEvent(player, bow, new EntityArrow(player.chunk, nbt,player), 2);
+	               Server.getInstance().getPluginManager().callEvent(entityShootBowEvent);
+               entityShootBowEvent.getBow().getId();
+               entityShootBowEvent.getProjectile().spawnToAll();
+               entityShootBowEvent.getProjectile().setMotion(entityShootBowEvent.getProjectile().getMotion().multiply(entityShootBowEvent.getForce()));
+
+               if (entityShootBowEvent.getProjectile() instanceof EntityProjectile) {
+                   ProjectileLaunchEvent projectev = new ProjectileLaunchEvent(entityShootBowEvent.getProjectile());
+                   Server.getInstance().getPluginManager().callEvent(projectev);
+                   if (projectev.isCancelled()) {
+                       entityShootBowEvent.getProjectile().kill();
+                   } else {
+                       entityShootBowEvent.getProjectile().spawnToAll();
+                       player.getLevel().addSound(new LaunchSound(snowball), player.getViewers().values());
+                   }
+               } else {
+                   entityShootBowEvent.getProjectile().spawnToAll();
+               }
+
+
 				SetEntityLinkPacket setEntityLinkPk = new SetEntityLinkPacket();
 				setEntityLinkPk.rider =  snowball.getId();
 				setEntityLinkPk.riding = player.getId();

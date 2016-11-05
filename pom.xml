@@ -9,6 +9,10 @@
   		<id>mengcraft</id>
   		<url>http://ci.mengcraft.com:8080/plugin/repository/everything/</url>
   	</repository>
+  	        	<repository>
+  		<id>pure</id>
+  		<url>http://jenkins.haniokasai.com/plugin/repository/project/PureEntities/LastSuccessful/repository/</url>
+  	</repository>
   </repositories>
 
   <properties>
@@ -22,6 +26,12 @@
 		<version>1.0-SNAPSHOT</version>
 		<scope>provided</scope>
     </dependency>
+    <dependency>
+<groupId>SW-Team</groupId>
+<artifactId>PureEntities</artifactId>
+    <version>1.0</version>
+    <scope>provided</scope>
+</dependency>
   </dependencies>
 
   <build>
