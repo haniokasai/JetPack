@@ -9,18 +9,12 @@ import cn.nukkit.Player;
 import cn.nukkit.Server;
 import cn.nukkit.block.Block;
 import cn.nukkit.entity.Entity;
-import cn.nukkit.entity.projectile.EntityArrow;
-import cn.nukkit.entity.projectile.EntityProjectile;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
-import cn.nukkit.event.entity.EntityShootBowEvent;
 import cn.nukkit.event.entity.ProjectileHitEvent;
-import cn.nukkit.event.entity.ProjectileLaunchEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.server.DataPacketReceiveEvent;
-import cn.nukkit.item.Item;
-import cn.nukkit.level.Location;
 import cn.nukkit.level.Position;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
@@ -28,11 +22,10 @@ import cn.nukkit.nbt.tag.DoubleTag;
 import cn.nukkit.nbt.tag.FloatTag;
 import cn.nukkit.nbt.tag.ListTag;
 import cn.nukkit.network.protocol.DataPacket;
+import cn.nukkit.network.protocol.SetEntityLinkPacket;
 import cn.nukkit.network.protocol.UseItemPacket;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.Config;
-import de.kniffo80.mobplugin.MobPlugin;
-import de.kniffo80.mobplugin.Utils;
 
 
 
@@ -118,18 +111,20 @@ public class Main extends PluginBase implements Listener{
 			UseItemPacket useItemPacket = null;
 			String type ="Arrow";
 			Double speed = 2.0;
-
+			if(player.getInventory().getItemInHand().getId()==346){
 			boolean p = false;
 			try{
 				useItemPacket = (UseItemPacket) pk;
-				if (pk instanceof UseItemPacket & useItemPacket.face == 0xff) {
+
+				Server.getInstance().broadcastMessage(String.valueOf(useItemPacket.face));
+				if (pk instanceof UseItemPacket & useItemPacket.face == -1) {
+
 					p = true;
 				}
 				}catch(Exception okok){
 				}
 
-			if(!hook.containsKey(player.getName())){
-				if(player.getInventory().getItemInHand().getId()==346){
+			if(p&!hook.containsKey(player.getName())){
 				CompoundTag nbt = new CompoundTag()
 						.putList(new ListTag<DoubleTag>("Pos")
 								.add(new DoubleTag("", player.getX()+(-Math.sin(player.yaw / 180 * Math.PI) * Math.cos(player.pitch / 180 * Math.PI))))
@@ -142,34 +137,28 @@ public class Main extends PluginBase implements Listener{
 						.putList(new ListTag<FloatTag>("Rotation")
 								.add(new FloatTag("", (float) player.yaw))
 								.add(new FloatTag("", (float) player.pitch)));
-				EntityArrow snowball = new EntityArrow(player.chunk,nbt,player);
+				Entity snowball = Entity.createEntity(type,player.chunk,nbt,player);
 
-				  double f = 1.2;
-				Location pos= new Location(player.getX()+(-Math.sin(player.yaw / 180 * Math.PI) * Math.cos(player.pitch / 180 * Math.PI)),player.getY()+player.getEyeHeight()-0.25,player.getZ()+(Math.cos(player.yaw / 180 * Math.PI) * Math.cos(player.pitch / 180 * Math.PI)));
-				Entity k = MobPlugin.create("Arrow", pos, this);
-	            if (!(k instanceof EntityArrow)) {
-	                return;
-	            }
-	            EntityArrow arrow = (EntityArrow) k;
-	            double yaw = player.yaw + Utils.rand(-220, 220) / 10;
-	            double pitch = player.pitch + Utils.rand(-120, 120) / 10;
-	            arrow.setMotion(new Vector3(-Math.sin(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch)) * f * f, -Math.sin(Math.toRadians(pitch)) * f * f,
-	                    Math.cos(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch)) * f * f));
-	            EntityShootBowEvent ev = new EntityShootBowEvent(player, Item.get(Item.ARROW, 0, 1), arrow, f);
-	            Server.getInstance().getPluginManager().callEvent(ev);
+				snowball.setMotion(snowball.getMotion().multiply(speed));
+				snowball.spawnToAll();
 
-	            EntityProjectile projectile = ev.getProjectile();
-	            if (ev.isCancelled()) {
-	                projectile.kill();
-	            } else {
-	                ProjectileLaunchEvent launch = new ProjectileLaunchEvent(projectile);
-	                Server.getInstance().getPluginManager().callEvent(launch);
-	                if (launch.isCancelled()) {
-	                    projectile.kill();
-	                } else {
-	                    projectile.spawnToAll();
-	                }
-	            }
+				SetEntityLinkPacket setEntityLinkPk = new SetEntityLinkPacket();
+				setEntityLinkPk.rider =  snowball.getId();
+				setEntityLinkPk.riding = player.getId();
+				setEntityLinkPk.type = SetEntityLinkPacket.TYPE_PASSENGER;
+				player.dataPacket(setEntityLinkPk);
+
+				setEntityLinkPk = new SetEntityLinkPacket();
+				setEntityLinkPk.rider =  snowball.getId();
+				setEntityLinkPk.riding = player.getId();
+				setEntityLinkPk.type = 2;
+                Server.broadcastPacket(Server.getInstance().getOnlinePlayers().values(), pk);
+
+                setEntityLinkPk = new SetEntityLinkPacket();
+                setEntityLinkPk.rider = snowball.getId();
+                setEntityLinkPk.riding = 0;
+                setEntityLinkPk.type = 2;
+                player.dataPacket(setEntityLinkPk);
 				gun.put((int) snowball.getId(),player);
 				hook.put(name,true);
 
