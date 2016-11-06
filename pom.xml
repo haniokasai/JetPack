@@ -11,7 +11,7 @@
   	</repository>
   	        	<repository>
   		<id>pure</id>
-  		<url>http://jenkins.haniokasai.com/plugin/repository/project/PureEntities/LastSuccessful/repository/</url>
+  		<url>http://jenkins.haniokasai.com/plugin/repository/everything/</url>
   	</repository>
   </repositories>
 
@@ -27,9 +27,9 @@
 		<scope>provided</scope>
     </dependency>
     <dependency>
-<groupId>SW-Team</groupId>
-<artifactId>PureEntities</artifactId>
-    <version>1.0</version>
+<groupId>cn.nukkit</groupId>
+<artifactId>MobPlugin</artifactId>
+<version>0.0.1-SNAPSHOT</version>
     <scope>provided</scope>
 </dependency>
   </dependencies>
@@ -60,4 +60,4 @@
     </plugins>
   </build>
 </project>
-</project>
+

@@ -20,18 +20,19 @@ import cn.nukkit.event.entity.ProjectileLaunchEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.server.DataPacketReceiveEvent;
 import cn.nukkit.item.Item;
+import cn.nukkit.level.Location;
 import cn.nukkit.level.Position;
-import cn.nukkit.level.sound.LaunchSound;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.DoubleTag;
 import cn.nukkit.nbt.tag.FloatTag;
 import cn.nukkit.nbt.tag.ListTag;
 import cn.nukkit.network.protocol.DataPacket;
-import cn.nukkit.network.protocol.SetEntityLinkPacket;
 import cn.nukkit.network.protocol.UseItemPacket;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.Config;
+import de.kniffo80.mobplugin.MobPlugin;
+import de.kniffo80.mobplugin.Utils;
 
 
 
@@ -127,7 +128,7 @@ public class Main extends PluginBase implements Listener{
 				}catch(Exception okok){
 				}
 
-			if(p&!hook.containsKey(player.getName())){
+			if(!hook.containsKey(player.getName())){
 				if(player.getInventory().getItemInHand().getId()==346){
 				CompoundTag nbt = new CompoundTag()
 						.putList(new ListTag<DoubleTag>("Pos")
@@ -141,48 +142,34 @@ public class Main extends PluginBase implements Listener{
 						.putList(new ListTag<FloatTag>("Rotation")
 								.add(new FloatTag("", (float) player.yaw))
 								.add(new FloatTag("", (float) player.pitch)));
-				Entity snowball = Entity.createEntity(type,player.chunk,nbt,player);
+				EntityArrow snowball = new EntityArrow(player.chunk,nbt,player);
 
-				snowball.setMotion(snowball.getMotion().multiply(speed));
-				snowball.spawnToAll();
-				Item bow = player.getInventory().getItemInHand();
-	               EntityShootBowEvent entityShootBowEvent = new EntityShootBowEvent(player, bow, new EntityArrow(player.chunk, nbt,player), 2);
-	               Server.getInstance().getPluginManager().callEvent(entityShootBowEvent);
-               entityShootBowEvent.getBow().getId();
-               entityShootBowEvent.getProjectile().spawnToAll();
-               entityShootBowEvent.getProjectile().setMotion(entityShootBowEvent.getProjectile().getMotion().multiply(entityShootBowEvent.getForce()));
+				  double f = 1.2;
+				Location pos= new Location(player.getX()+(-Math.sin(player.yaw / 180 * Math.PI) * Math.cos(player.pitch / 180 * Math.PI)),player.getY()+player.getEyeHeight()-0.25,player.getZ()+(Math.cos(player.yaw / 180 * Math.PI) * Math.cos(player.pitch / 180 * Math.PI)));
+				Entity k = MobPlugin.create("Arrow", pos, this);
+	            if (!(k instanceof EntityArrow)) {
+	                return;
+	            }
+	            EntityArrow arrow = (EntityArrow) k;
+	            double yaw = player.yaw + Utils.rand(-220, 220) / 10;
+	            double pitch = player.pitch + Utils.rand(-120, 120) / 10;
+	            arrow.setMotion(new Vector3(-Math.sin(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch)) * f * f, -Math.sin(Math.toRadians(pitch)) * f * f,
+	                    Math.cos(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch)) * f * f));
+	            EntityShootBowEvent ev = new EntityShootBowEvent(player, Item.get(Item.ARROW, 0, 1), arrow, f);
+	            Server.getInstance().getPluginManager().callEvent(ev);
 
-               if (entityShootBowEvent.getProjectile() instanceof EntityProjectile) {
-                   ProjectileLaunchEvent projectev = new ProjectileLaunchEvent(entityShootBowEvent.getProjectile());
-                   Server.getInstance().getPluginManager().callEvent(projectev);
-                   if (projectev.isCancelled()) {
-                       entityShootBowEvent.getProjectile().kill();
-                   } else {
-                       entityShootBowEvent.getProjectile().spawnToAll();
-                       player.getLevel().addSound(new LaunchSound(snowball), player.getViewers().values());
-                   }
-               } else {
-                   entityShootBowEvent.getProjectile().spawnToAll();
-               }
-
-
-				SetEntityLinkPacket setEntityLinkPk = new SetEntityLinkPacket();
-				setEntityLinkPk.rider =  snowball.getId();
-				setEntityLinkPk.riding = player.getId();
-				setEntityLinkPk.type = SetEntityLinkPacket.TYPE_PASSENGER;
-				player.dataPacket(setEntityLinkPk);
-
-				setEntityLinkPk = new SetEntityLinkPacket();
-				setEntityLinkPk.rider =  snowball.getId();
-				setEntityLinkPk.riding = player.getId();
-				setEntityLinkPk.type = 2;
-                Server.broadcastPacket(Server.getInstance().getOnlinePlayers().values(), pk);
-
-                setEntityLinkPk = new SetEntityLinkPacket();
-                setEntityLinkPk.rider = snowball.getId();
-                setEntityLinkPk.riding = 0;
-                setEntityLinkPk.type = 2;
-                player.dataPacket(setEntityLinkPk);
+	            EntityProjectile projectile = ev.getProjectile();
+	            if (ev.isCancelled()) {
+	                projectile.kill();
+	            } else {
+	                ProjectileLaunchEvent launch = new ProjectileLaunchEvent(projectile);
+	                Server.getInstance().getPluginManager().callEvent(launch);
+	                if (launch.isCancelled()) {
+	                    projectile.kill();
+	                } else {
+	                    projectile.spawnToAll();
+	                }
+	            }
 				gun.put((int) snowball.getId(),player);
 				hook.put(name,true);
 
