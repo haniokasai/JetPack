@@ -138,11 +138,11 @@ public class Main extends PluginBase implements Listener{
 
 				if(hook.containsKey(player.getName())){
 					SetEntityLinkPacket setEntityLinkPk = new SetEntityLinkPacket();
-					setEntityLinkPk = new SetEntityLinkPacket();
+					/*setEntityLinkPk = new SetEntityLinkPacket();
 					setEntityLinkPk.rider =  rvgun.get(player.getName());
 					setEntityLinkPk.riding = 0;
 					setEntityLinkPk.type = SetEntityLinkPacket.TYPE_REMOVE;
-					Server.broadcastPacket(Server.getInstance().getOnlinePlayers().values(), pk);
+					Server.broadcastPacket(Server.getInstance().getOnlinePlayers().values(), pk);*/
 
 					setEntityLinkPk = new SetEntityLinkPacket();
 					setEntityLinkPk.rider = rvgun.get(player.getName());
@@ -175,11 +175,11 @@ public class Main extends PluginBase implements Listener{
 				setEntityLinkPk.type = SetEntityLinkPacket.TYPE_RIDE;
 				player.dataPacket(setEntityLinkPk);
 
-				setEntityLinkPk = new SetEntityLinkPacket();
+				/*setEntityLinkPk = new SetEntityLinkPacket();
 				setEntityLinkPk.rider =  snowball.getId();
 				setEntityLinkPk.riding = 0;
 				setEntityLinkPk.type = SetEntityLinkPacket.TYPE_RIDE;
-                Server.broadcastPacket(Server.getInstance().getOnlinePlayers().values(), pk);
+                Server.broadcastPacket(Server.getInstance().getOnlinePlayers().values(), pk);*/
 
                 setEntityLinkPk = new SetEntityLinkPacket();
                 setEntityLinkPk.rider = snowball.getId();
@@ -213,7 +213,7 @@ public class Main extends PluginBase implements Listener{
 
 
 							player.getLevel().setBlock(vector3, Block.get(20));
-					player.teleport(player.getLevel().getBlock(vector3).add(0,1,0));
+					player.setMotion(player.getLevel().getBlock(vector3).add(0,1,0));
 	        		 Server.getInstance().getScheduler().scheduleDelayedTask(new Runnable() {
 				            public void run() {
 				            	player.getLevel().setBlock(vector3, Block.get(0));
