@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: cn.nukkit:MobPlugin:0.0.1-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/cn/nukkit/MobPlugin/0.0.1-SNAPSHOT/MobPlugin-0.0.1-20161106.084939-3.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/cn/nukkit/MobPlugin/0.0.1-SNAPSHOT/MobPlugin-0.0.1-20161106.084939-3-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/cn/nukkit/MobPlugin/0.0.1-SNAPSHOT/MobPlugin-0.0.1-20161106.084939-3-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
