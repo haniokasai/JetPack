@@ -140,7 +140,7 @@ public class Main extends PluginBase implements Listener{
 					SetEntityLinkPacket setEntityLinkPk = new SetEntityLinkPacket();
 					setEntityLinkPk = new SetEntityLinkPacket();
 					setEntityLinkPk.rider =  rvgun.get(player.getName());
-					setEntityLinkPk.riding = player.getId();
+					setEntityLinkPk.riding = 0;
 					setEntityLinkPk.type = SetEntityLinkPacket.TYPE_REMOVE;
 					Server.broadcastPacket(Server.getInstance().getOnlinePlayers().values(), pk);
 
@@ -171,13 +171,13 @@ public class Main extends PluginBase implements Listener{
 
 				SetEntityLinkPacket setEntityLinkPk = new SetEntityLinkPacket();
 				setEntityLinkPk.rider =  snowball.getId();
-				setEntityLinkPk.riding = player.getId();
+				setEntityLinkPk.riding = 0;
 				setEntityLinkPk.type = SetEntityLinkPacket.TYPE_RIDE;
 				player.dataPacket(setEntityLinkPk);
 
 				setEntityLinkPk = new SetEntityLinkPacket();
 				setEntityLinkPk.rider =  snowball.getId();
-				setEntityLinkPk.riding = player.getId();
+				setEntityLinkPk.riding = 0;
 				setEntityLinkPk.type = SetEntityLinkPacket.TYPE_RIDE;
                 Server.broadcastPacket(Server.getInstance().getOnlinePlayers().values(), pk);
 
