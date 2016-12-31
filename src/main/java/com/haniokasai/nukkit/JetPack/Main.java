@@ -15,6 +15,7 @@ import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.entity.ProjectileHitEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
+import cn.nukkit.event.player.PlayerKickEvent;
 import cn.nukkit.event.player.PlayerMoveEvent;
 import cn.nukkit.event.server.DataPacketReceiveEvent;
 import cn.nukkit.level.Location;
@@ -35,6 +36,7 @@ import cn.nukkit.utils.Config;
 public class Main extends PluginBase implements Listener{
 
 	static Map<Integer, Player> gun = new HashMap<Integer, Player>();
+	static Map<String, Integer> rvgun = new HashMap<String, Integer>();
 	static Map<String , Boolean> hook = new HashMap<String , Boolean>();
 	static List<String> stop;
 
@@ -116,12 +118,18 @@ public class Main extends PluginBase implements Listener{
 			UseItemPacket useItemPacket = null;
 			String type ="Arrow";
 			Double speed = 2.0;
-			if(player.getInventory().getItemInHand().getId()==346){
+			int pi;
+			try{
+				pi = player.getInventory().getItemInHand().getId();
+			}catch (NullPointerException e){
+				return;
+			}
+			if(pi==346){
 			boolean p = false;
 			try{
 				useItemPacket = (UseItemPacket) pk;
-				Server.getInstance().getLogger().info(useItemPacket.toString());
-				Server.getInstance().broadcastMessage(String.valueOf(useItemPacket.face));
+				//Server.getInstance().getLogger().info(useItemPacket.toString());
+				//Server.getInstance().broadcastMessage(String.valueOf(useItemPacket.face));
 				if (pk instanceof UseItemPacket) {
 					p = true;
 				}
@@ -129,7 +137,19 @@ public class Main extends PluginBase implements Listener{
 				}
 
 				if(hook.containsKey(player.getName())){
+					SetEntityLinkPacket setEntityLinkPk = new SetEntityLinkPacket();
+					setEntityLinkPk = new SetEntityLinkPacket();
+					setEntityLinkPk.rider =  rvgun.get(player.getName());
+					setEntityLinkPk.riding = player.getId();
+					setEntityLinkPk.type = SetEntityLinkPacket.TYPE_REMOVE;
+					Server.broadcastPacket(Server.getInstance().getOnlinePlayers().values(), pk);
+
+					setEntityLinkPk = new SetEntityLinkPacket();
+					setEntityLinkPk.rider = rvgun.get(player.getName());
+					setEntityLinkPk.riding = 0;
+					setEntityLinkPk.type = SetEntityLinkPacket.TYPE_REMOVE;
 					hook.remove(player.getName());
+
 				}
 			if(p&!hook.containsKey(player.getName())){
 				CompoundTag nbt = new CompoundTag()
@@ -167,6 +187,7 @@ public class Main extends PluginBase implements Listener{
                 setEntityLinkPk.type = SetEntityLinkPacket.TYPE_RIDE;
                 player.dataPacket(setEntityLinkPk);
 				gun.put((int) snowball.getId(),player);
+				rvgun.put(player.getName(),(int) snowball.getId());
 				hook.put(name,true);
 
 			}
@@ -201,6 +222,7 @@ public class Main extends PluginBase implements Listener{
 	        	},20*15);
 	        	}
 				gun.remove((int)snowball.getId());
+	        	rvgun.remove(player);
 				hook.remove(player.getName());
 	        }
 	       }
@@ -216,4 +238,11 @@ public class Main extends PluginBase implements Listener{
 		}
 	}*/
 
+	@EventHandler
+	public void nokick(PlayerKickEvent event){
+		if(event.getReason().matches(".*"+"Attempting"+ ".*"));
+			if(event.getReason().matches(".*"+"attack"+ ".*"));
+				if(event.getReason().matches(".*"+"invalid"+ ".*"));
+				event.setCancelled();
+	}
 }
