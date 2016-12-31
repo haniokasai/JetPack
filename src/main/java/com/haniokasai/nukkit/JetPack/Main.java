@@ -136,22 +136,22 @@ public class Main extends PluginBase implements Listener{
 				}catch(Exception okok){
 				}
 
-				if(hook.containsKey(player.getName())){
+				if(hook.containsKey(name)){
 					SetEntityLinkPacket setEntityLinkPk = new SetEntityLinkPacket();
 					/*setEntityLinkPk = new SetEntityLinkPacket();
-					setEntityLinkPk.rider =  rvgun.get(player.getName());
+					setEntityLinkPk.rider =  rvgun.get(name);
 					setEntityLinkPk.riding = 0;
 					setEntityLinkPk.type = SetEntityLinkPacket.TYPE_REMOVE;
 					Server.broadcastPacket(Server.getInstance().getOnlinePlayers().values(), pk);*/
 
 					setEntityLinkPk = new SetEntityLinkPacket();
-					setEntityLinkPk.rider = rvgun.get(player.getName());
+					setEntityLinkPk.rider = rvgun.get(name);
 					setEntityLinkPk.riding = 0;
 					setEntityLinkPk.type = SetEntityLinkPacket.TYPE_REMOVE;
-					hook.remove(player.getName());
+					hook.remove(name);
 
 				}
-			if(p&!hook.containsKey(player.getName())){
+			if(p&!hook.containsKey(name)){
 				CompoundTag nbt = new CompoundTag()
 						.putList(new ListTag<DoubleTag>("Pos")
 								.add(new DoubleTag("", player.getX()+(-Math.sin(player.yaw / 180 * Math.PI) * Math.cos(player.pitch / 180 * Math.PI))))
@@ -187,7 +187,7 @@ public class Main extends PluginBase implements Listener{
                 setEntityLinkPk.type = SetEntityLinkPacket.TYPE_RIDE;
                 player.dataPacket(setEntityLinkPk);
 				gun.put((int) snowball.getId(),player);
-				rvgun.put(player.getName(),(int) snowball.getId());
+				rvgun.put(name,(int) snowball.getId());
 				hook.put(name,true);
 
 			}
@@ -201,6 +201,7 @@ public class Main extends PluginBase implements Listener{
 	        snowball.getLevel().removeEntity(snowball);
 	        if(gun.containsKey((int)snowball.getId())){
 	        	Player player =gun.get((int)snowball.getId());
+	        	String name =player.getName();
 	        	final Vector3 vector3 = snowball.getLocation();
 	        	final int x=snowball.getLocation().getFloorX();
 	        	final int y =snowball.getLocation().getFloorY();
@@ -210,10 +211,12 @@ public class Main extends PluginBase implements Listener{
 				pv.add(2);*/
 	        	//Vector3 v =new Vector3(player.getFloorX(),player.getFloorY()-1,player.getFloorZ());
 	        	if(player.getLevel().getBlock(vector3).getId() ==0&(player.getLevel().getBlock(new Vector3(x+1,y,z)).getId() !=0||player.getLevel().getBlock(new Vector3(x-1,y,z)).getId() !=0||player.getLevel().getBlock(new Vector3(x,y,z+1)).getId() !=0||player.getLevel().getBlock(new Vector3(x,y,z-1)).getId() !=0)){
+					player.getLevel().setBlock(vector3, Block.get(20));
 
-
-							player.getLevel().setBlock(vector3, Block.get(20));
-					player.setMotion(player.getLevel().getBlock(vector3).add(0,1,0));
+						final Block block = player.getLevel().getBlock(vector3);
+						if(block.getId()==20) {
+						player.teleport(block.add(0, 1, 0));
+					}
 	        		 Server.getInstance().getScheduler().scheduleDelayedTask(new Runnable() {
 				            public void run() {
 				            	player.getLevel().setBlock(vector3, Block.get(0));
@@ -223,7 +226,7 @@ public class Main extends PluginBase implements Listener{
 	        	}
 				gun.remove((int)snowball.getId());
 	        	rvgun.remove(player);
-				hook.remove(player.getName());
+				hook.remove(name);
 	        }
 	       }
 
