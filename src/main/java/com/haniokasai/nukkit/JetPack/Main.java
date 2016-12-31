@@ -3,6 +3,7 @@ package com.haniokasai.nukkit.JetPack;
 import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import cn.nukkit.Player;
@@ -14,7 +15,9 @@ import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.entity.ProjectileHitEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
+import cn.nukkit.event.player.PlayerMoveEvent;
 import cn.nukkit.event.server.DataPacketReceiveEvent;
+import cn.nukkit.level.Location;
 import cn.nukkit.level.Position;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
@@ -33,6 +36,7 @@ public class Main extends PluginBase implements Listener{
 
 	static Map<Integer, Player> gun = new HashMap<Integer, Player>();
 	static Map<String , Boolean> hook = new HashMap<String , Boolean>();
+	static List<String> stop;
 
 
 	public void onEnable() {
@@ -108,6 +112,7 @@ public class Main extends PluginBase implements Listener{
 			Player player = event.getPlayer();
 			String name = player.getName();
 			DataPacket pk = event.getPacket();
+
 			UseItemPacket useItemPacket = null;
 			String type ="Arrow";
 			Double speed = 2.0;
@@ -115,15 +120,17 @@ public class Main extends PluginBase implements Listener{
 			boolean p = false;
 			try{
 				useItemPacket = (UseItemPacket) pk;
-
+				Server.getInstance().getLogger().info(useItemPacket.toString());
 				Server.getInstance().broadcastMessage(String.valueOf(useItemPacket.face));
-				if (pk instanceof UseItemPacket & useItemPacket.face == -1) {
-
+				if (pk instanceof UseItemPacket) {
 					p = true;
 				}
 				}catch(Exception okok){
 				}
 
+				if(hook.containsKey(player.getName())){
+					hook.remove(player.getName());
+				}
 			if(p&!hook.containsKey(player.getName())){
 				CompoundTag nbt = new CompoundTag()
 						.putList(new ListTag<DoubleTag>("Pos")
@@ -145,19 +152,19 @@ public class Main extends PluginBase implements Listener{
 				SetEntityLinkPacket setEntityLinkPk = new SetEntityLinkPacket();
 				setEntityLinkPk.rider =  snowball.getId();
 				setEntityLinkPk.riding = player.getId();
-				setEntityLinkPk.type = SetEntityLinkPacket.TYPE_PASSENGER;
+				setEntityLinkPk.type = SetEntityLinkPacket.TYPE_RIDE;
 				player.dataPacket(setEntityLinkPk);
 
 				setEntityLinkPk = new SetEntityLinkPacket();
 				setEntityLinkPk.rider =  snowball.getId();
 				setEntityLinkPk.riding = player.getId();
-				setEntityLinkPk.type = 2;
+				setEntityLinkPk.type = SetEntityLinkPacket.TYPE_RIDE;
                 Server.broadcastPacket(Server.getInstance().getOnlinePlayers().values(), pk);
 
                 setEntityLinkPk = new SetEntityLinkPacket();
                 setEntityLinkPk.rider = snowball.getId();
                 setEntityLinkPk.riding = 0;
-                setEntityLinkPk.type = 2;
+                setEntityLinkPk.type = SetEntityLinkPacket.TYPE_RIDE;
                 player.dataPacket(setEntityLinkPk);
 				gun.put((int) snowball.getId(),player);
 				hook.put(name,true);
@@ -177,14 +184,19 @@ public class Main extends PluginBase implements Listener{
 	        	final int x=snowball.getLocation().getFloorX();
 	        	final int y =snowball.getLocation().getFloorY();
 	        	final int z =snowball.getLocation().getFloorZ();
-	        	Vector3 v =new Vector3(player.getFloorX(),player.getFloorY()-1,player.getFloorZ());
+				/*Vector3 pv = vector3;
+				pv.abs();
+				pv.add(2);*/
+	        	//Vector3 v =new Vector3(player.getFloorX(),player.getFloorY()-1,player.getFloorZ());
 	        	if(player.getLevel().getBlock(vector3).getId() ==0&(player.getLevel().getBlock(new Vector3(x+1,y,z)).getId() !=0||player.getLevel().getBlock(new Vector3(x-1,y,z)).getId() !=0||player.getLevel().getBlock(new Vector3(x,y,z+1)).getId() !=0||player.getLevel().getBlock(new Vector3(x,y,z-1)).getId() !=0)){
-	        		player.getLevel().setBlock(vector3, Block.get(20));
-	        		player.getLevel().setBlock(v, Block.get(20));
+
+
+							player.getLevel().setBlock(vector3, Block.get(20));
+					player.teleport(player.getLevel().getBlock(vector3).add(0,1,0));
 	        		 Server.getInstance().getScheduler().scheduleDelayedTask(new Runnable() {
 				            public void run() {
 				            	player.getLevel().setBlock(vector3, Block.get(0));
-				            	player.getLevel().setBlock(v, Block.get(0));
+				            	//player.getLevel().setBlock(v, Block.get(0));
 	        		 }
 	        	},20*15);
 	        	}
@@ -192,5 +204,16 @@ public class Main extends PluginBase implements Listener{
 				hook.remove(player.getName());
 	        }
 	       }
+
+	/*@EventHandler
+	public void stopmove(PlayerMoveEvent event){
+		if(stop.contains(event.getPlayer().getName())){
+			Location from = event.getFrom();
+			Location to = event.getTo();
+			if(Math.abs(from.y-to.y) >0.1 ){
+				event.setCancelled(true);
+			}
+		}
+	}*/
 
 }
