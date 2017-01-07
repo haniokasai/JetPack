@@ -5,3 +5,10 @@ author: haniokasai
 api: ["1.0.0"]
 description: JetPack plugin
 website: http://haniokasai.com
+commands:
+   hk:
+      description: After Hookshot hit,player will bi teleport?
+      usage: /hk
+      permission: JetPack.hk
+      permission-message: You don't have <permission>
+      default: true

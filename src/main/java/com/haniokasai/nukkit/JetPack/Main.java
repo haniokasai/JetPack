@@ -1,20 +1,21 @@
 package com.haniokasai.nukkit.JetPack;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import cn.nukkit.Player;
 import cn.nukkit.Server;
 import cn.nukkit.block.Block;
+import cn.nukkit.command.Command;
+import cn.nukkit.command.CommandSender;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.entity.ProjectileHitEvent;
+import cn.nukkit.event.inventory.InventoryPickupArrowEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
+import cn.nukkit.event.player.PlayerJoinEvent;
 import cn.nukkit.event.player.PlayerKickEvent;
 import cn.nukkit.event.player.PlayerMoveEvent;
 import cn.nukkit.event.server.DataPacketReceiveEvent;
@@ -30,7 +31,9 @@ import cn.nukkit.network.protocol.SetEntityLinkPacket;
 import cn.nukkit.network.protocol.UseItemPacket;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.Config;
+import cn.nukkit.utils.TextFormat;
 
+import static java.lang.Math.abs;
 
 
 public class Main extends PluginBase implements Listener{
@@ -38,6 +41,7 @@ public class Main extends PluginBase implements Listener{
 	static Map<Integer, Player> gun = new HashMap<Integer, Player>();
 	static Map<String, Integer> rvgun = new HashMap<String, Integer>();
 	static Map<String , Boolean> hook = new HashMap<String , Boolean>();
+	static Map<String , Boolean> hook_after_tp = new HashMap<String , Boolean>();
 	static List<String> stop;
 
 
@@ -198,7 +202,7 @@ public class Main extends PluginBase implements Listener{
 	    public void onProjectileHit(ProjectileHitEvent event) throws Exception{
 	       Entity snowball = event.getEntity();
 	        Position loc = snowball.getLocation();
-	        snowball.getLevel().removeEntity(snowball);
+
 	        if(gun.containsKey((int)snowball.getId())){
 	        	Player player =gun.get((int)snowball.getId());
 	        	String name =player.getName();
@@ -210,17 +214,31 @@ public class Main extends PluginBase implements Listener{
 				pv.abs();
 				pv.add(2);*/
 	        	//Vector3 v =new Vector3(player.getFloorX(),player.getFloorY()-1,player.getFloorZ());
-	        	if(player.getLevel().getBlock(vector3).getId() ==0&(player.getLevel().getBlock(new Vector3(x+1,y,z)).getId() !=0||player.getLevel().getBlock(new Vector3(x-1,y,z)).getId() !=0||player.getLevel().getBlock(new Vector3(x,y,z+1)).getId() !=0||player.getLevel().getBlock(new Vector3(x,y,z-1)).getId() !=0)){
-					player.getLevel().setBlock(vector3, Block.get(20));
 
-						final Block block = player.getLevel().getBlock(vector3);
-						if(block.getId()==20) {
-						player.teleport(block.add(0, 1, 0));
-					}
+
+				if(!hook_after_tp.get(name)) {
+					Server.getInstance().getScheduler().scheduleDelayedTask(new Runnable() {
+						public void run() {
+							snowball.getLevel().removeEntity(snowball);
+						}
+					}, 5);
+				}else{
+					snowball.getLevel().removeEntity(snowball);
+				}
+	        	if(player.getLevel().getBlock(vector3).getId() ==0&(player.getLevel().getBlock(new Vector3(x+1,y,z)).getId() !=0||player.getLevel().getBlock(new Vector3(x-1,y,z)).getId() !=0||player.getLevel().getBlock(new Vector3(x,y,z+1)).getId() !=0||player.getLevel().getBlock(new Vector3(x,y,z-1)).getId() !=0)){
+
+
+						Block block = null;
+						if(hook_after_tp.get(name)) {
+							block = player.getLevel().getBlock(vector3);
+							player.getLevel().setBlock(vector3, Block.get(20));
+							if((abs(block.getX()-player.getX())<5)&(abs(block.getY()-player.getY())<5)&(abs(block.getZ()-player.getZ())<5)) {
+								player.teleport(block.add(0, 1, 0));
+							}
+						}
 	        		 Server.getInstance().getScheduler().scheduleDelayedTask(new Runnable() {
 				            public void run() {
 				            	player.getLevel().setBlock(vector3, Block.get(0));
-				            	//player.getLevel().setBlock(v, Block.get(0));
 	        		 }
 	        	},20*15);
 	        	}
@@ -229,6 +247,36 @@ public class Main extends PluginBase implements Listener{
 				hook.remove(name);
 	        }
 	       }
+
+	@Override
+	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+		String name =sender.getName();
+		switch (command.getName()) {
+			case "hk":
+				if(!sender.hasPermission("JetPack.hk")){
+					sender.sendMessage(TextFormat.RED + "You don't have permission to use this command.");
+					return false;
+				}else{
+
+					if(hook_after_tp.get(name)){
+						sender.sendMessage("[JetPack] hook_after_tp was disabled");
+						hook_after_tp.put(name,false);
+					}else{
+						sender.sendMessage("[JetPack] hook_after_tp was enabled");
+						hook_after_tp.put(name,true);
+					}
+				}
+				break;
+		}
+		return true;
+	}
+
+	@EventHandler
+	public void settingset(PlayerJoinEvent event){
+		Player player = event.getPlayer();
+		String name = player.getName();
+		hook_after_tp.put(name,true);
+	}
 
 	/*@EventHandler
 	public void stopmove(PlayerMoveEvent event){
@@ -240,6 +288,14 @@ public class Main extends PluginBase implements Listener{
 			}
 		}
 	}*/
+
+	@EventHandler
+	public void pickuparrow(InventoryPickupArrowEvent event){
+		Entity snowball = event.getArrow();
+		if(gun.containsKey((int)snowball.getId())) {
+			event.setCancelled(true);
+		}
+	}
 
 	@EventHandler
 	public void nokick(PlayerKickEvent event){
