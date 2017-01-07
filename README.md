@@ -7,7 +7,7 @@ Download
 https://www.youtube.com/watch?v=bqR2QQ1oWec
 http://forums.nukkit.cn/resources/jetpack.48/
 
-based on https://github.com/maa123/PVPitem/
+based on https://github.com/maa123/PVPitem/ and http://cafe.naver.com/minecraftpe/2321797
 
 
 config
