@@ -216,15 +216,11 @@ public class Main extends PluginBase implements Listener{
 	        	//Vector3 v =new Vector3(player.getFloorX(),player.getFloorY()-1,player.getFloorZ());
 
 
-				if(!hook_after_tp.get(name)) {
-					Server.getInstance().getScheduler().scheduleDelayedTask(new Runnable() {
-						public void run() {
-							snowball.getLevel().removeEntity(snowball);
-						}
-					}, 5);
-				}else{
-					snowball.getLevel().removeEntity(snowball);
-				}
+				Server.getInstance().getScheduler().scheduleDelayedTask(new Runnable() {
+					public void run() {
+						snowball.getLevel().removeEntity(snowball);
+					}
+				}, 5);
 	        	if(player.getLevel().getBlock(vector3).getId() ==0&(player.getLevel().getBlock(new Vector3(x+1,y,z)).getId() !=0||player.getLevel().getBlock(new Vector3(x-1,y,z)).getId() !=0||player.getLevel().getBlock(new Vector3(x,y,z+1)).getId() !=0||player.getLevel().getBlock(new Vector3(x,y,z-1)).getId() !=0)){
 
 
